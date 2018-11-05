@@ -49,11 +49,9 @@ def normalized_cut_minimization(Graph):
     A = get_adjacency_matrix(Graph)
     D = get_sparse_degree_matrix(Graph)
     L = D - A
-    print(len(L))
     L_tilde = np.linalg.inv(np.sqrt(D)).dot(L).dot(np.linalg.inv(np.sqrt(D)))
     eigenvals, eigenvecs = np.linalg.eigh(L_tilde)
     v = eigenvecs[:, 1]
-    print('Calculated')
     return np.linalg.inv(np.sqrt(D)).dot(v)
     ##########################################################################
 
