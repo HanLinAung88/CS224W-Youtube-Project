@@ -1,5 +1,6 @@
 import snap
 import numpy as np
+from collections import defaultdict
 from matplotlib import pyplot as plt
 import utils
 
@@ -51,6 +52,8 @@ def normalized_cut_minimization(Graph):
     L = D - A
     L_tilde = np.linalg.inv(np.sqrt(D)).dot(L).dot(np.linalg.inv(np.sqrt(D)))
     eigenvals, eigenvecs = np.linalg.eigh(L_tilde)
+    print "eigenvalues are ", eigenvals[:10]
+    print "eigenvectors are", eigenvecs[:10]
     v = eigenvecs[:, 1]
     return np.linalg.inv(np.sqrt(D)).dot(v)
     ##########################################################################
@@ -102,16 +105,36 @@ def splitSets(vec_x):
             set_negative.append(i)
     return set_positive, set_negative
 
-def spectral_cluster(fname):
+def generate_categories(video_dict_list, graph_to_dict, cluster):
+    categories = defaultdict(int)
+    for nid in cluster:
+        video_id = utils.getVideoId(nid, graph_to_dict)
+        try: 
+            categories[(video_dict_list[video_id]['category'])] += 1
+        except:
+            continue
+    return categories
+
+def spectral_cluster(fname, fname_extended):
     '''
     Main spectral clustering workflow
     '''
     ##########################################################################
+    video_dict_list_extended = utils.load_file(fname_extended)
+
     video_dict_list = utils.load_file(fname)
-    youtube = utils.load_graph_undirected(video_dict_list)
+    youtube, dict_to_graph, graph_to_dict = utils.load_graph_undirected(video_dict_list)
+    video_dict_list.update(video_dict_list_extended)
+
     x_youtube = normalized_cut_minimization(youtube)
     S, S_bar = splitSets(x_youtube)
+    S_categories = generate_categories(video_dict_list, graph_to_dict, S)
+    S_bar_categories = generate_categories(video_dict_list, graph_to_dict, S_bar)
+    print(S_categories)
+    print(S_bar_categories)
+
     printMetrics(youtube, S, S_bar, "Youtube spectral clustering")
 
-fname = './dataset/0.txt'
-spectral_cluster(fname)
+fname = './dataset/0222/0.txt'
+fname_extended = './dataset/0222/1.txt'
+spectral_cluster(fname, fname_extended)
