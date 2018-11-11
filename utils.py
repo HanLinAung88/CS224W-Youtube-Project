@@ -61,10 +61,21 @@ def load_file(fname):
                 video_dict_list[row[0]] = new_video_node
     return video_dict_list
 
+#plots a bar graph
+def plot_barGraph(data, x_label, y_label):
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    names = data[0]
+    values = data[1]
+    plt.bar(range(len(names)), values, align='center')
+    plt.xticks(range(len(names)), names)
+    plt.show()
+
 #plots a histogram
 def plot_hist(data, x_label, y_label):
-    plt.hist(x=data, bins=100)
+    n, bins, patches = plt.hist(x=data, bins=100)
     plt.grid(axis='y')
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.show()
+    return n, bins, patches
