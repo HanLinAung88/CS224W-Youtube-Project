@@ -2,6 +2,7 @@ import snap
 import numpy as np
 from matplotlib import pyplot as plt
 import csv
+import networkx as nx
 
 #hashes string to create unique integer id
 def convertStrToUniqueInt(token):
@@ -42,7 +43,7 @@ def load_graph_undirected(video_dict_list):
             related_graph_id = dict_to_graph[related_dict_id]
             if not Graph.IsEdge(chosen_graph_id, related_graph_id):
                 Graph.AddEdge(chosen_graph_id, related_graph_id)
-
+    snap.SaveEdgeList(Graph, 'youtube_graph.txt')
     return Graph, dict_to_graph, graph_to_dict
 
 #loads the youtube dataset file and constructs a dictionary
@@ -79,3 +80,14 @@ def plot_hist(data, x_label, y_label):
     plt.ylabel(y_label)
     plt.show()
     return n, bins, patches
+
+#loads networkX graph
+def load_graph_networkX(fname):
+    G = nx.read_edgelist(fname)
+    return G
+
+#plots networkX graph
+def plot_graph_networkX(G):
+    nx.draw_kamada_kawai(G, with_labels = False)
+    plt.show()
+    plt.savefig('youtube_graph.png')
