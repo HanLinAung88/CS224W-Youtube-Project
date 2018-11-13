@@ -3,6 +3,8 @@ import numpy as np
 from collections import defaultdict
 from matplotlib import pyplot as plt
 import utils
+from sklearn.cluster import SpectralClustering
+
 
 def get_adjacency_matrix(Graph):
     '''
@@ -109,7 +111,7 @@ def generate_categories(video_dict_list, graph_to_dict, cluster):
     categories = defaultdict(int)
     for nid in cluster:
         video_id = utils.getVideoId(nid, graph_to_dict)
-        try: 
+        try:
             categories[(video_dict_list[video_id]['category'])] += 1
         except:
             continue
@@ -123,8 +125,11 @@ def spectral_cluster(fname, fname_extended):
     video_dict_list_extended = utils.load_file(fname_extended)
 
     video_dict_list = utils.load_file(fname)
+
     youtube, dict_to_graph, graph_to_dict = utils.load_graph_undirected(video_dict_list)
     video_dict_list.update(video_dict_list_extended)
+
+    spectral_cluster_sklearn(youtube, video_dict_list, graph_to_dict)
 
     x_youtube = normalized_cut_minimization(youtube)
     S, S_bar = splitSets(x_youtube)
@@ -134,6 +139,23 @@ def spectral_cluster(fname, fname_extended):
     print(S_bar_categories)
 
     printMetrics(youtube, S, S_bar, "Youtube spectral clustering")
+
+def spectral_cluster_sklearn(Graph, video_dict_list, graph_to_dict):
+    adj_mat = get_adjacency_matrix(Graph)
+    # Cluster
+    sc = SpectralClustering(12, affinity='precomputed', n_init=100)
+    sc.fit(adj_mat)
+
+    # Compare ground-truth and clustering-results
+    print('spectral clustering')
+    print(sc.labels_)
+    S_clusters = defaultdict(list)
+    for i in range(len(sc.labels_)):
+        S_clusters[sc.labels_[i]].append(i)
+    for S_i in S_clusters:
+        S_categories = generate_categories(video_dict_list, graph_to_dict, S_clusters[S_i])
+        print(len(S_clusters[S_i]))
+
 
 fname = './dataset/0222/0.txt'
 fname_extended = './dataset/0222/1.txt'
