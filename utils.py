@@ -82,12 +82,28 @@ def plot_hist(data, x_label, y_label):
     return n, bins, patches
 
 #loads networkX graph
-def load_graph_networkX(fname):
-    G = nx.read_edgelist(fname)
+def load_graph_networkX(fname_edgelist):
+    G = nx.read_edgelist(fname_edgelist)
     return G
 
-#plots networkX graph
-def plot_graph_networkX(G):
-    nx.draw_kamada_kawai(G, with_labels = False)
+#gets all the categories in the current dictionary
+def get_all_categories(video_dict_list):
+    categories = set()
+    for video_id in video_dict_list:
+        categories.add(video_dict_list[video_id]['category'])
+    return list(categories)
+
+#plots networkX graph with color and node_sizes
+def plot_graph_networkX(G, graph_to_dict, video_dict_list):
+    node_sizes = [10.0 if graph_to_dict[int(node)] in video_dict_list else 0.01 for node in G]
+    categories = get_all_categories(video_dict_list)
+    node_colors = []
+    for node in G:
+        if graph_to_dict[int(node)] in video_dict_list:
+            node_colors.append((categories.index(video_dict_list[getVideoId(int(node), graph_to_dict)]['category']) + 1.0)/float(len(categories)))
+        else:
+            node_colors.append(0.0)
+    print(nx.info(G))
+    nx.draw_kamada_kawai(G, with_labels = False, node_size = node_sizes, node_color = node_colors)
     plt.show()
     plt.savefig('youtube_graph.png')
