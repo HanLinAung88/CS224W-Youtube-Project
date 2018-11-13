@@ -103,7 +103,6 @@ def plot_graph_networkX(G, graph_to_dict, video_dict_list):
             node_colors.append((categories.index(video_dict_list[getVideoId(int(node), graph_to_dict)]['category']) + 1.0)/float(len(categories)))
         else:
             node_colors.append(0.0)
-    print(nx.info(G))
     nx.draw_kamada_kawai(G, with_labels = False, node_size = node_sizes, node_color = node_colors)
     plt.show()
     plt.savefig('youtube_graph.png')
