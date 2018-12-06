@@ -1,6 +1,8 @@
 from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
+import pickle
 import rolx
 import features
 import numpy as np
@@ -15,6 +17,9 @@ roles = 5
 H, R = rolx.extract_rolx_roles(G, roles)
 print(H.shape, R.shape)
 
+# np.save('rolx_features', H)
+# H = np.load('rolx_features.npy')
+
 X = []
 y = []
 pos_data = []
@@ -23,13 +28,19 @@ neg_data = []
 # extracts data from rolx for features
 adj_mat = G.get_adjacency()
 feature_dict = features.get_features(fname, fname_extended)
+# with open('feature_dict.pkl', 'wb') as f:
+# 	pickle.dump(feature_dict, f)
+# feature_dict = pickle.load('feature_dict.pkl')
+
 H.tolist()
 for row in range(adj_mat.shape[0]):
     H_row = np.array(H[row]).flatten()
     for col in range(adj_mat.shape[1]):
-    	print H[col][0].flatten()
-        H_total = np.array(H[col][0]).flatten() + H_row 
-        H_total = np.concatenate(H_total, feature_dict[(row, col)])
+    	# appended
+        H_total = np.array(H[col][0]) + H_row
+        # concatenated
+        # H_total = np.concatenate([np.array(H[col][0]).flatten(), H_row])
+        # H_total = np.concatenate([H_total, feature_dict[(row, col)]])
         if adj_mat[row][col] > 0:
             pos_data.append((H_total, adj_mat[row][col]))
         else:
@@ -51,7 +62,22 @@ X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.33, random
 clf = LogisticRegression(random_state=0, solver='lbfgs').fit(X_train, y_train)
 
 # makes predictions
-predictions = clf.predict(X_test)
-accuracy = np.mean(predictions == y_test)
-print('Accuracy:', accuracy)
-np.savetxt('dataset/results.txt', predictions)
+train_predictions = clf.predict(X_train)
+test_predictions = clf.predict(X_test)
+
+get_scores(train_predictions, y_train, test_predictions, y_test)
+# accuracy = np.mean(predictions == y_test)
+# print('f1 scores: ', f1_score(y_test, predictions))
+# print('Accuracy:', accuracy)
+np.savetxt('dataset/results.txt', test_predictions)
+
+def get_scores(train_pred, train_true, test_pred, test_true):
+	train_accuracy = np.mean(train_pred == train_true)
+	train_f1 =  f1_score(train_true, train_pred)
+	test_accuracy = np.mean(test_pred == test_true)
+	test_f1 =  f1_score(test_true, test_pred)
+
+	print('Train f1 scores: ', train_f1)
+	print('Training Accuracy:', train_accuracy)
+	print('Test f1 scores: ', test_f1)
+	print('Testing Accuracy:', test_accuracy)
