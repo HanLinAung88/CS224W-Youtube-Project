@@ -27,7 +27,9 @@ H.tolist()
 for row in range(adj_mat.shape[0]):
     H_row = np.array(H[row]).flatten()
     for col in range(adj_mat.shape[1]):
-        H_total = np.array(H[col][0]).flatten() + H_row + feature_dict[(row, col)]
+    	print H[col][0].flatten()
+        H_total = np.array(H[col][0]).flatten() + H_row 
+        H_total = np.concatenate(H_total, feature_dict[(row, col)])
         if adj_mat[row][col] > 0:
             pos_data.append((H_total, adj_mat[row][col]))
         else:
