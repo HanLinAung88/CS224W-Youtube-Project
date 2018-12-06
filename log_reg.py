@@ -2,15 +2,18 @@ from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 import rolx
+import features
 import numpy as np
 import utils
 import random
 
 # loads in the data by running rolx
 fname = './dataset/0222/0.txt'
+fname_extended = './dataset/0222/1.txt'
 G, dict_to_graph, graph_to_dict = rolx.load_graph_igraph(fname)
 roles = 5
 H, R = rolx.extract_rolx_roles(G, roles)
+print(H.shape, R.shape)
 
 X = []
 y = []
@@ -19,11 +22,12 @@ neg_data = []
 
 # extracts data from rolx for features
 adj_mat = G.get_adjacency()
+feature_dict = features.get_features(fname, fname_extended)
 H.tolist()
 for row in range(adj_mat.shape[0]):
     H_row = np.array(H[row]).flatten()
     for col in range(adj_mat.shape[1]):
-        H_total = np.array(H[col][0]).flatten() + H_row
+        H_total = np.array(H[col][0]).flatten() + H_row + feature_dict[(row, col)]
         if adj_mat[row][col] > 0:
             pos_data.append((H_total, adj_mat[row][col]))
         else:
