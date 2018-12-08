@@ -356,7 +356,7 @@ def addNodeToIGraph(Graph, video_dict_id, dict_to_graph, graph_to_dict, current_
         current_graph_counter += 1
     return current_graph_counter
 
-def load_graph_igraph(fname):
+def load_graph_igraph(fname, fname_egonet=None):
     video_dict_list = utils.load_file(fname)
     Graph = igraph.Graph()
     dict_to_graph = {}
@@ -375,11 +375,35 @@ def load_graph_igraph(fname):
             related_graph_id = dict_to_graph[related_dict_id]
             if Graph.get_eid(chosen_graph_id, related_graph_id, directed=False, error=False) == -1:
                 Graph.add_edges([(chosen_graph_id, related_graph_id)])
+
+    if fname_egonet is not None:
+        complete_egonet(Graph, dict_to_graph, fname_egonet)
     return Graph, dict_to_graph, graph_to_dict
 
-def main(argv):
-    G, dict_to_graph, graph_to_dict = load_graph_igraph(argv[0]) #igraph.Graph.Read_GML(argv[0])
+# adds additional edges to the egonet
+def complete_egonet(Graph, dict_to_graph, fname):
+    video_dict_list = utils.load_file(fname)
 
+    for video_node in video_dict_list.values():
+        video_dict_id = video_node['video_id']
+
+        if video_dict_id in dict_to_graph:
+            chosen_graph_id = dict_to_graph[video_dict_id]
+            related_dict_ids = video_node['related_ids']
+
+            for related_dict_id in related_dict_ids:
+                if related_dict_id in dict_to_graph:
+                    related_graph_id = dict_to_graph[related_dict_id]
+                    if Graph.get_eid(chosen_graph_id, related_graph_id, directed=False, error=False) == -1:
+                        Graph.add_edges([(chosen_graph_id, related_graph_id)])
+    return Graph
+
+def main(argv):
+    fname_egonet = None
+    if len(argv) == 3:
+        fname_egonet = argv[2]
+    G, dict_to_graph, graph_to_dict = load_graph_igraph(argv[0], fname_egonet) #igraph.Graph.Read_GML(argv[0])
+    
     if len(argv) > 1:
         roles = int(argv[1])
         return extract_rolx_roles(G, roles=roles)
